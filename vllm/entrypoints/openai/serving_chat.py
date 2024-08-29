@@ -117,11 +117,14 @@ class OpenAIServingChat(OpenAIServing):
         mm_data: Optional[MultiModalDataDict] = None
         try:
             if len(mm_futures):
-                # since we support only single mm data currently
-                assert len(
-                    mm_futures
-                ) == 1, "Multiple 'image_url' input is currently not supported."
-                mm_data = await mm_futures[0]
+                mm_results = await asyncio.gather(*mm_futures)
+                mm_data = {}
+                for mm_result in mm_results:
+                    for k, v in mm_result.items():
+                        if k not in mm_data:
+                            mm_data[k] = []
+                        mm_data[k].append(v)
+
         except Exception as e:
             logger.error("Error in loading multi-modal data: %s", e)
             return self.create_error_response(str(e))

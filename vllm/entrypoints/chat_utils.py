@@ -174,12 +174,7 @@ def _parse_chat_message_content_parts(
             texts.append(text)
         elif part_type == "image_url":
             modality = "image"
-            if len(mm_futures) > 0:
-                raise NotImplementedError(
-                    "Multiple multimodal inputs is currently not supported.")
-
             image_url = _ImageParser.validate_python(part)["image_url"]
-
             if image_url.get("detail", "auto") != "auto":
                 logger.warning(
                     "'image_url.detail' is currently not supported and "
@@ -189,10 +184,6 @@ def _parse_chat_message_content_parts(
             mm_futures.append(image_future)
         elif part_type == "audio_url":
             modality = "audio"
-            if len(mm_futures) > 0:
-                raise NotImplementedError(
-                    "Multiple multimodal inputs is currently not supported.")
-
             audio_url = _AudioParser.validate_python(part)["audio_url"]
             audio_future = async_get_and_parse_audio(audio_url["url"])
             mm_futures.append(audio_future)
@@ -211,7 +202,7 @@ def _parse_chat_message_content_parts(
                     "Skipping prompt formatting.")
             else:
                 text_prompt = _get_full_multimodal_text_prompt(
-                    placeholder_token_str=placeholder_token_str,
+                    placeholder_token_str=placeholder_token_str * len(mm_futures),
                     text_prompt=text_prompt,
                 )
 
