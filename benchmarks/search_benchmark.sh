@@ -1,15 +1,15 @@
-ServerUrl=${EAS_URL}/v1/chat/completions
-AccessToken=${EAS_URL}
-ClientName=qwen214b #测试名称
+ServerUrl=${EAS_URL}
+AccessToken=${EAS_TOKEN}
+ClientName=qwen27b #测试名称
 Backend=openai-chat # bladellm 服务后端，bladellm适用于压测bladellm、pai-rag等服务
 
-HfModel=Qwen/Qwen2.5-14B-Instruct #下载tokenizer
-ModelName=Qwen2.5-14B-Instruct
+HfModel=Qwen/Qwen2.5-7B-Instruct #下载tokenizer
+ModelName=Qwen2.5-7B-Instruct
 
 DatasetPath=data/sharegpt_zh_38K_converted.json
 OutputLength=30 #overwrite 输出长度
-ConcurrencyList=(20 40 60 80 100) #测试并发数
-NumPrompts=500 #每轮测试发送的请求数
+ConcurrencyList=(10 20 30 40 50 60) #测试并发数
+NumPrompts=300 #每轮测试发送的请求数
 
 
 PYTHON=python3
@@ -65,7 +65,9 @@ for Concurrency in "${ConcurrencyList[@]}"; do
         --sharegpt-output-len ${OutputLength} \
         --dataset-path ${DatasetPath} \
         --max-concurrency ${Concurrency} \
-        --num-prompts ${NumPrompts} > ${temp_file}
+        --num-prompts ${NumPrompts} > ${temp_file} \
+	--percentile-metrics ttft,tpot,itl,e2el \
+	--metric-percentiles 10,25,50,75,99 
 
     if [ -f ${temp_file} ]; then
         echo "Temporary file found: ${temp_file}"
